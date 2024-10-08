@@ -1,7 +1,7 @@
 locals {
-  akv_id = data.terraform_remote_state.lvl0.outputs.akv_merlion_output.id
+  akv_id = data.terraform_remote_state.lvl0.outputs.akv_output.id
 
-  des_naming_convention_info = {
+  naming_convention_info = {
     name         = "001"
     project_code = "ml"
     env          = "de"
@@ -17,20 +17,34 @@ locals {
   }
 
 }
-
-resource "azurerm_resource_group" "des_rg" {
-
-  name     = "des-resources"
-  location = "southeastasia"
-
+module "resource_groups" {
+  source = "git::https://github.com/BrettOJ/tf-az-module-resource-group?ref=main"
+  resource_groups = {
+    1 = {
+      name                   = var.resource_group_name
+      location               = var.location
+      naming_convention_info = local.naming_convention_info
+      tags = {
+      }
+    }
+  }
 }
 
 module "azure_disk_encryption_set" {
   source                 = "git::https://github.com/BrettOJ/tf-az-module-disk-encryption-set?ref=main"
-  resource_group_name    = azurerm_resource_group.des_rg.name
-  location               = azurerm_resource_group.des_rg.location
-  keyvault_id            = local.akv_id
+  resource_group_name    = module.resource_groups.rg_output[1].name
+  location               = var.location
+  key_vault_key_id            = var.key_vault_key_id
   tags                   = local.tags
-  naming_convention_info = local.des_naming_convention_info
-  tenant_id              = "e08ace22-2c12-4de6-8b26-3a5d0f62aed1"
+  naming_convention_info = local.naming_convention_info
+  managed_hsm_key_id = var.managed_hsm_key_id
+  auto_key_rotation_enabled = var.auto_key_rotation_enabled
+  encryption_type          = var.encryption_type
+  federated_client_id      = var.federated_client_id
+  tenant_id                = var.tenant_id
+  keyvault_id              = local.akv_id
+  identity {
+    type = var.identity.type
+    identity_ids = var.identity.identity_ids
+  }
 }

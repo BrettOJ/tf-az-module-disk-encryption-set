@@ -3,7 +3,7 @@ variable "resource_group_name" {
   type        = string
   description = "(Required) Specifies the name of the Resource Group in which the Virtual Machine should exist. Changing this forces a new resource to be created."
 }
-variable "keyvault_id" {
+variable "key_vault_key_id" {
   type        = string
   description = "(Required) Specifies the azure key vault id."
 }
@@ -33,4 +33,40 @@ variable "tenant_id" {
   type        = string
   default     = null
   description = "If this value is set then Key Vault access policy will be set"
+}
+
+variable "managed_hsm_key_id" {
+  type        = string
+  default     = null
+  description = "Specifies the managed hsm key id."
+}
+
+variable "auto_key_rotation_enabled" {
+  type        = bool
+  default     = false
+  description = "Specifies whether Azure Disk Encryption Set automatically rotates the encryption Key to latest version or not."
+}
+
+variable "encryption_type" {
+  type        = string
+  default     = "EncryptionAtRestWithCustomerKey"
+}
+
+variable "federated_client_id" {
+  type        = string
+  default     = null
+  description = "Specifies the multi-tenant application client id to access key vault in a different tenant."
+}
+
+variable "identity" {
+  type = object({
+    type         = string
+    identity_ids = list(string)
+  })
+  description = "Specifies the identity block as defined below."
+}
+
+variable "keyvault_id" {
+  type        = string
+  description = "Specifies the azure key vault id."
 }
